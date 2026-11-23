@@ -69,7 +69,6 @@
 !/comfyui/
 !/dify-workflow/
 !/adguardhome/
-!/discord/
 !/novita/
 !/minimax/
 !/ollama/
@@ -251,7 +250,6 @@
 !/comfyui/agent-harness/
 !/dify-workflow/agent-harness/
 !/adguardhome/agent-harness/
-!/discord/agent-harness/
 !/novita/agent-harness/
 !/minimax/agent-harness/
 !/ollama/agent-harness/

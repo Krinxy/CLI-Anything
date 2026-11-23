@@ -139,25 +139,6 @@
       ]
     },
     {
-      "name": "discord",
-      "display_name": "Discord",
-      "version": "1.0.0",
-      "description": "Send messages, read channel history and inspect servers via the Discord bot REST API and webhooks (secrets from env only, pings suppressed by default)",
-      "requires": "Discord bot token (DISCORD_BOT_TOKEN) or webhook URL (DISCORD_WEBHOOK_URL)",
-      "homepage": "https://discord.com",
-      "source_url": null,
-      "install_cmd": "pip install git+https://github.com/HKUDS/CLI-Anything.git#subdirectory=discord/agent-harness",
-      "entry_point": "cli-anything-discord",
-      "skill_md": "skills/cli-anything-discord/SKILL.md",
-      "category": "communication",
-      "contributors": [
-        {
-          "name": "Krinxy",
-          "url": "https://github.com/Krinxy"
-        }
-      ]
-    },
-    {
       "name": "audacity",
       "display_name": "Audacity",
       "version": "1.0.0",
