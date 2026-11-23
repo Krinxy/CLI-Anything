@@ -825,7 +825,7 @@ The meta-skill points agents to the live CLI-Hub catalog, where they can choose 
 | **🎮 Game Development** | Manage game projects, scenes, exports, and scripting through headless engine interfaces | **[Godot Engine](https://godotengine.org)**, **[s&box](https://sbox.game)** |
 | **🔬 Scientific Computing** | Automate research workflows, simulations, and complex calculations | ImageJ, FreeCAD, QGIS, ParaView, Gephi, LibreCAD, Stellarium, KiCad, JASP, Jamovi |
 | **🏢 Enterprise & Office** | Convert business applications and productivity tools into agent-accessible systems | NextCloud, GitLab, Grafana, Mattermost, LibreOffice, AppFlowy, NocoDB, Odoo (Community), Plane, ERPNext |
-| **📞 Communication & Collaboration** | Automate meeting scheduling, participant management, recording retrieval, and reporting through structured CLI | Zoom, Jitsi Meet, BigBlueButton, Mattermost |
+| **📞 Communication & Collaboration** | Automate meeting scheduling, participant management, recording retrieval, and reporting through structured CLI | Zoom, Jitsi Meet, BigBlueButton, Mattermost, Discord |
 | **📐 Diagramming & Visualization** | Create and manipulate diagrams, flowcharts, architecture diagrams, and visual documentation programmatically | Draw.io (diagrams.net), Mermaid, PlantUML, Excalidraw, yEd |
 | **🌐 Network & Infrastructure** | Manage network services, DNS, ad-blocking, and infrastructure through structured CLI commands | AdGuardHome |
 | **🧪 Testing & Mocking** | Control HTTP mock servers, manage test stubs, record and replay API traffic for integration testing | **[WireMock](https://wiremock.org)** |
@@ -1287,6 +1287,13 @@ Each application received complete, production-ready CLI interfaces — not demo
 <td align="center">✅ 36</td>
 </tr>
 <tr>
+<td align="center"><strong>💬 <a href="discord/agent-harness/">Discord</a></strong></td>
+<td>Messaging & Server Automation</td>
+<td><code>cli-anything-discord</code></td>
+<td>Discord bot REST API + webhooks</td>
+<td align="center">✅ 56</td>
+</tr>
+<tr>
 <td align="center"><strong>🦙 Ollama</strong></td>
 <td>Local LLM Inference</td>
 <td><code>cli-anything-ollama</code></td>
@@ -1426,6 +1433,7 @@ anygen         50 passed  ✅   (40 unit + 10 e2e)
 notebooklm     21 passed  ✅   (21 unit + 0 e2e)
 comfyui        73 passed  ✅   (63 unit + 10 e2e)
 adguardhome    36 passed  ✅   (24 unit + 12 e2e)
+discord        56 passed  ✅   (52 unit + 4 e2e, 3 opt-in skipped)
 ollama         98 passed  ✅   (87 unit + 11 e2e)
 sketch         19 passed  ✅   (19 jest, Node.js)
 renderdoc      59 passed  ✅   (45 unit + 14 e2e)
@@ -1529,6 +1537,7 @@ cli-anything/
 ├── 🧠 notebooklm/agent-harness/         # NotebookLM CLI (experimental, 21 tests)
 ├── 🧩 dify-workflow/agent-harness/      # Dify Workflow CLI wrapper (11 tests)
 ├── 🛡️ adguardhome/agent-harness/       # AdGuard Home CLI (36 tests)
+├── 💬 discord/agent-harness/            # Discord CLI (56 tests)
 ├── 🦙 ollama/agent-harness/             # Ollama CLI (98 tests)
 ├── 🎮 godot/agent-harness/              # Godot Engine CLI (24 tests)
 ├── 📦 sbox/agent-harness/               # s&box CLI (244 tests: 157 unit + 17 orchestrator + 50 e2e + 20 exit-code)
