@@ -94,6 +94,7 @@
 !/unrealinsights/
 !/firefly-iii/
 !/nsight-graphics/
+!/x64dbg/
 !/lldb/
 !/macrocli/
 !/sbox/
@@ -283,6 +284,7 @@
 !/unrealinsights/agent-harness/
 !/firefly-iii/agent-harness/
 !/nsight-graphics/agent-harness/
+!/x64dbg/agent-harness/
 !/lldb/agent-harness/
 !/macrocli/agent-harness/
 !/sbox/agent-harness/
