@@ -120,25 +120,6 @@
       ]
     },
     {
-      "name": "slack",
-      "display_name": "Slack",
-      "version": "1.0.0",
-      "description": "Send messages, read channel history and list channels via the Slack Web API and incoming webhooks (secrets from env only, broadcast pings disabled by default)",
-      "requires": "Slack bot token (SLACK_BOT_TOKEN) or webhook URL (SLACK_WEBHOOK_URL)",
-      "homepage": "https://slack.com",
-      "source_url": null,
-      "install_cmd": "pip install git+https://github.com/HKUDS/CLI-Anything.git#subdirectory=slack/agent-harness",
-      "entry_point": "cli-anything-slack",
-      "skill_md": "skills/cli-anything-slack/SKILL.md",
-      "category": "communication",
-      "contributors": [
-        {
-          "name": "Krinxy",
-          "url": "https://github.com/Krinxy"
-        }
-      ]
-    },
-    {
       "name": "adguardhome",
       "display_name": "AdGuardHome",
       "version": "1.0.1",
