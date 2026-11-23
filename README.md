@@ -1281,6 +1281,13 @@ Each application received complete, production-ready CLI interfaces — not demo
 <td align="center">✅ 70</td>
 </tr>
 <tr>
+<td align="center"><strong>📨 <a href="slack/agent-harness/">Slack</a></strong></td>
+<td>Messaging & Workspace Automation</td>
+<td><code>cli-anything-slack</code></td>
+<td>Slack Web API + webhooks</td>
+<td align="center">✅ 71</td>
+</tr>
+<tr>
 <td align="center"><strong>🛡️ AdGuard Home</strong></td>
 <td>Network-wide Ad Blocking</td>
 <td><code>cli-anything-adguardhome</code></td>
@@ -1440,6 +1447,7 @@ mermaid        10 passed  ✅   (5 unit + 5 e2e)
 anygen         50 passed  ✅   (40 unit + 10 e2e)
 notebooklm     21 passed  ✅   (21 unit + 0 e2e)
 comfyui        73 passed  ✅   (63 unit + 10 e2e)
+slack          71 passed  ✅   (67 unit + 4 e2e, 3 opt-in skipped)
 adguardhome    36 passed  ✅   (24 unit + 12 e2e)
 ollama         98 passed  ✅   (87 unit + 11 e2e)
 sketch         19 passed  ✅   (19 jest, Node.js)
@@ -1545,6 +1553,7 @@ cli-anything/
 ├── 🖼️ comfyui/agent-harness/            # ComfyUI CLI (73 tests)
 ├── 🧠 notebooklm/agent-harness/         # NotebookLM CLI (experimental, 21 tests)
 ├── 🧩 dify-workflow/agent-harness/      # Dify Workflow CLI wrapper (11 tests)
+├── 📨 slack/agent-harness/              # Slack CLI (71 tests)
 ├── 🛡️ adguardhome/agent-harness/       # AdGuard Home CLI (36 tests)
 ├── 🦙 ollama/agent-harness/             # Ollama CLI (98 tests)
 ├── 🎮 godot/agent-harness/              # Godot Engine CLI (24 tests)
