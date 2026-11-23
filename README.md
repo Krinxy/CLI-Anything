@@ -1330,6 +1330,13 @@ Each application received complete, production-ready CLI interfaces — not demo
 <td align="center">✅ 244</td>
 </tr>
 <tr>
+<td align="center"><strong>🛠️ <a href="x64dbg/agent-harness/">x64dbg</a></strong></td>
+<td>Windows Debugging</td>
+<td><code>cli-anything-x64dbg</code></td>
+<td>x64dbg headless debugger</td>
+<td align="center">✅ 52</td>
+</tr>
+<tr>
 <td align="center"><strong>🐞 <a href="lldb/agent-harness/">LLDB</a></strong></td>
 <td>Native Debugging</td>
 <td><code>cli-anything-lldb</code></td>
@@ -1439,6 +1446,7 @@ sketch         19 passed  ✅   (19 jest, Node.js)
 renderdoc      59 passed  ✅   (45 unit + 14 e2e)
 cloudcompare   88 passed  ✅   (49 unit + 39 e2e)
 openscreen    101 passed  ✅   (78 unit + 23 e2e)
+x64dbg         52 passed  ✅   (45 unit + 7 e2e, 1 skipped)
 lldb           27 passed  ✅   (23 unit + 4 e2e)
 ghidra         88 passed  ✅   (80 unit + 8 e2e)
 nsight-graphics 51 passed ✅   (46 unit/CLI + 5 local e2e)
@@ -1544,6 +1552,7 @@ cli-anything/
 ├── 🎨 sketch/agent-harness/             # Sketch CLI (19 tests, Node.js)
 ├── 🔬 renderdoc/agent-harness/          # RenderDoc CLI (59 tests)
 ├── 🟩 nsight-graphics/agent-harness/    # Nsight Graphics CLI (51 tests)
+├── 🛠️ x64dbg/agent-harness/             # x64dbg CLI (52 tests)
 ├── 🐞 lldb/agent-harness/               # LLDB CLI (27 tests)
 ├── 🧬 ghidra/agent-harness/             # Ghidra CLI (88 tests)
 ├── 📈 unrealinsights/agent-harness/     # Unreal Insights CLI (50 tests)

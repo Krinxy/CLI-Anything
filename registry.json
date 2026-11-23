@@ -447,6 +447,25 @@
       ]
     },
     {
+      "name": "x64dbg",
+      "display_name": "x64dbg",
+      "version": "1.0.0",
+      "description": "Scripted Windows debugging via the real x64dbg headless debugger: breakpoints, stepping, registers and memory as JSON (debugging executes the target)",
+      "requires": "Windows and an unzipped x64dbg snapshot (X64DBG_DIR)",
+      "homepage": "https://x64dbg.com",
+      "source_url": null,
+      "install_cmd": "pip install git+https://github.com/HKUDS/CLI-Anything.git#subdirectory=x64dbg/agent-harness",
+      "entry_point": "cli-anything-x64dbg",
+      "skill_md": "skills/cli-anything-x64dbg/SKILL.md",
+      "category": "debugging",
+      "contributors": [
+        {
+          "name": "Krinxy",
+          "url": "https://github.com/Krinxy"
+        }
+      ]
+    },
+    {
       "name": "lldb",
       "display_name": "LLDB",
       "version": "1.0.0",
