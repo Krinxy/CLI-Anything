@@ -68,6 +68,7 @@
 !/mermaid/
 !/comfyui/
 !/dify-workflow/
+!/slack/
 !/adguardhome/
 !/discord/
 !/novita/
@@ -250,6 +251,7 @@
 !/mermaid/agent-harness/
 !/comfyui/agent-harness/
 !/dify-workflow/agent-harness/
+!/slack/agent-harness/
 !/adguardhome/agent-harness/
 !/discord/agent-harness/
 !/novita/agent-harness/
