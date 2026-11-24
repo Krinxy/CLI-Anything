@@ -35,6 +35,16 @@ Every `run` supports `--json`. Running with no subcommand starts the REPL.
 - The session is always closed (`stop`, then kill) even if a command fails, so no debuggee or headless process is left behind.
 - Events that arrive after a command timed out are discarded before the next command, so they cannot end it early. If `headless.exe` dies, the next command fails with a clear error instead of hanging.
 
+## Failure modes (observed with the 2026.05.27 snapshot)
+
+| Situation | What x64dbg prints | What the harness does |
+|-----------|--------------------|-----------------------|
+| 32-bit target in the x64 debugger | `Use x32dbg to debug this file!` | fails at once: "... Pass --arch x32 for 32-bit targets." (it used to wait the whole 60 s load timeout) |
+| target is not a PE file | `Invalid PE file!` | fails at once with that text |
+| target path does not exist | `File does not exist!` | fails at once |
+| unknown x64dbg command | `Unknown command/expression: ...` | returned as the command's output, not an error |
+| `headless.exe` dies | nothing | the next command fails with "exited", never a hang |
+
 ## Known limits
 
 - Windows only.

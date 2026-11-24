@@ -385,3 +385,39 @@ def test_non_ascii_output_never_crashes_on_a_legacy_console(monkeypatch):
     print("module \u4e2d\u6587 caf\u00e9")
     stream.flush()
     assert (chr(92) + "u4e2d").encode() in raw.getvalue() and "caf".encode() in raw.getvalue()
+
+
+# --- load failures are detected at once, with the reason --------------------
+
+@pytest.fixture
+def named_target(tmp_path):
+    def make(name):
+        p = tmp_path / name
+        p.write_bytes(b"MZ")
+        return str(p)
+    return make
+
+
+def test_wrong_architecture_fails_at_once_and_names_the_flag(session, named_target):
+    started = time.monotonic()
+    with pytest.raises(RuntimeError, match="Use x32dbg.*--arch x32"):
+        session.load(named_target("wrongarch.exe"), timeout=30)
+    assert time.monotonic() - started < 5
+
+
+def test_file_that_is_not_a_pe_fails_at_once(session, named_target):
+    started = time.monotonic()
+    with pytest.raises(RuntimeError, match="Invalid PE file"):
+        session.load(named_target("notpe.exe"), timeout=30)
+    assert time.monotonic() - started < 5
+
+
+def test_silent_failure_ends_at_the_timeout_with_a_message(session, named_target):
+    with pytest.raises(RuntimeError, match="no system breakpoint|Debugging"):
+        session.load(named_target("silent.exe"), timeout=1)
+
+
+def test_error_text_does_not_echo_the_launcher_command_line(session, named_target):
+    with pytest.raises(RuntimeError) as exc:
+        session.load(named_target("notpe.exe"), timeout=30)
+    assert "headless.exe" not in str(exc.value)

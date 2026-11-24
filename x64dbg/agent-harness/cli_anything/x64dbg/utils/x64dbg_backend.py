@@ -27,6 +27,9 @@ RESUME = {"r", "run", "go", "erun", "era", "sti", "stepinto", "sto", "stepover",
 NOISE_PREFIXES = ("[SYMBOL]",)
 STARTED = "entering command loop"
 SYSTEM_BP = "System breakpoint reached"
+# Lines x64dbg prints when `init` cannot start the target (observed with the 2026.05.27 snapshot). Without them
+# load() would wait the whole timeout for a system breakpoint that never comes.
+LOAD_FAILURES = ("does not exist", "Use x32dbg", "Use x64dbg", "Invalid PE file")
 INSTALL_HELP = (
     f"x64dbg not found. Download a snapshot from https://github.com/x64dbg/x64dbg/releases, unzip it, "
     f"and set {INSTALL_ENV} to the unzipped folder (the one containing 'release'). Windows only."
@@ -193,11 +196,20 @@ class X64dbgSession:
         path = check_target(target)
         self._drain()
         self._send(f'init "{path}"')
-        lines, ok = self._read_until(lambda ln: ln.startswith(SYSTEM_BP) or "does not exist" in ln, timeout)
+        lines, ok = self._read_until(
+            lambda ln: ln.startswith(SYSTEM_BP) or any(m in ln for m in LOAD_FAILURES), timeout)
         if self._ended:
             raise RuntimeError("x64dbg headless exited while starting the target.")
-        if not ok or any("does not exist" in ln for ln in lines):
-            raise RuntimeError("x64dbg could not start the target: " + " | ".join(lines[-3:]))
+        failed = [ln for ln in lines if any(m in ln for m in LOAD_FAILURES)]
+        if failed or not ok:
+            detail = " | ".join(ln.strip() for ln in (failed or lines[-3:]) if "headless.exe" not in ln) \
+                or "no system breakpoint was reached"
+            hint = ""
+            if any("Use x32dbg" in ln for ln in failed):
+                hint = " Pass --arch x32 for 32-bit targets."
+            elif any("Use x64dbg" in ln for ln in failed):
+                hint = " Pass --arch x64 (the default) for 64-bit targets."
+            raise RuntimeError(f"x64dbg could not start the target: {detail}.{hint}")
         return lines
 
     def run(self, command: str, timeout: float = 30) -> dict:

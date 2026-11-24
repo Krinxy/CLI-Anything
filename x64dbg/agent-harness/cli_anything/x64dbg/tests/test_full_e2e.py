@@ -11,6 +11,7 @@ import re
 import shutil
 import subprocess
 import sys
+import time
 
 import pytest
 
@@ -107,3 +108,43 @@ def test_usage_error_in_json_mode_is_json_on_stdout():
     res = run_cli("--json", "run")
     assert res.returncode == 2
     assert "TARGET" in json.loads(res.stdout)["error"]
+
+
+# --- real failure modes of the real debugger (no mocks) ---------------------
+
+@live
+def test_live_32bit_target_in_the_64bit_debugger_fails_fast_with_the_flag_to_use():
+    target = os.path.join(os.environ.get("SystemRoot", r"C:\Windows"), "SysWOW64", "find.exe")
+    if not os.path.isfile(target):
+        pytest.skip("no 32-bit system binary")
+    started = time.monotonic()
+    res = run_cli("--json", "run", target, "--execute", "--cmd", "run")
+    assert res.returncode == 1 and time.monotonic() - started < 25  # used to wait the whole 60 s load timeout
+    assert "Use x32dbg" in json.loads(res.stdout)["error"] and "--arch x32" in json.loads(res.stdout)["error"]
+
+
+@live
+def test_live_32bit_target_works_with_arch_x32():
+    target = os.path.join(os.environ.get("SystemRoot", r"C:\Windows"), "SysWOW64", "find.exe")
+    if not os.path.isfile(target):
+        pytest.skip("no 32-bit system binary")
+    res = run_cli("--json", "--arch", "x32", "run", target, "--execute", "--cmd", "run", "--regs")
+    data = json.loads(res.stdout)
+    assert res.returncode == 0 and data["state"] == "paused" and "eip" in data["registers"]
+
+
+@live
+def test_live_text_file_as_target_fails_fast_with_invalid_pe(tmp_path):
+    target = tmp_path / "notanexe.txt"
+    target.write_text("hello")
+    started = time.monotonic()
+    res = run_cli("--json", "run", str(target), "--execute")
+    assert res.returncode == 1 and time.monotonic() - started < 25
+    assert "Invalid PE file" in json.loads(res.stdout)["error"]
+
+
+@live
+def test_live_unknown_command_is_reported_not_fatal():
+    res = run_cli("--json", "run", FIND, "--execute", "--cmd", "frobnicate")
+    data = json.loads(res.stdout)
+    assert res.returncode == 0 and any("Unknown command" in line for line in data["results"][0]["output"])

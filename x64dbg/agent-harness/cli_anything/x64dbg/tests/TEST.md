@@ -2,7 +2,7 @@
 
 ## Test Inventory Plan
 
-- `test_core.py`: 53 unit tests. A fake `headless` (`fake_headless.py`) reproduces the protocol observed on the real tool, so they run anywhere without x64dbg.
+- `test_core.py`: 57 unit tests. A fake `headless` (`fake_headless.py`) reproduces the protocol observed on the real tool, so they run anywhere without x64dbg.
 - `test_full_e2e.py`: 4 subprocess tests that need no x64dbg (one of them only on non-Windows), plus 4 live tests against the real x64dbg headless debugger (skipped unless on Windows with `X64DBG_DIR` set)
 
 ## Unit Test Plan (test_core.py)
@@ -13,12 +13,14 @@
 - **Core**: register dump for x64 and x32, `debug_target` runs the commands in order and stops
 - **Robustness**: events left over from a timed-out command are discarded (a test shows the old behavior would return a stale event); a dead `headless.exe` is a clean error, not a hang or a broken pipe; start failures are runtime errors; `close()` really sends `stop`
 - **REPL** (`repl_step`, testable without a terminal): refuses without `--execute`; `load` keeps Windows backslashes and quotes; load, run, regs and raw commands work; a failed start is retried on the next line
+- **Load failures** (fake headless that reproduces the lines the real tool prints): a wrong architecture fails at once and names `--arch x32`; a non-PE file fails at once; a silent failure ends at the timeout with a message; the error never echoes the launcher command line
 - **Error contract** (`main()`): a usage error (missing `TARGET`, unknown option) is `{"error": ...}` with exit 2 in `--json` mode and Click text on stderr otherwise; `--help` exits 0; backend errors are JSON with exit 1; an unexpected exception is a message, never a traceback; Abort is JSON in `--json` mode; non-ASCII output never crashes a legacy console
 - **CLI**: `run` refuses without `--execute`, root `--execute` enables `run`, `--json`, script files with comments and blank lines, text output, timeout bounds
 
 ## E2E Test Plan (test_full_e2e.py)
 
 - Subprocess, no x64dbg: `--help`, a usage error is JSON on stdout with exit 2, `--execute` is required, non-Windows refusal, missing `X64DBG_DIR` gives a JSON error
+- Real failure modes (no mocks): the 32-bit `SysWOW64\find.exe` in the x64 debugger fails in under 25 s with the `--arch x32` hint (it used to take 61 s), the same binary works with `--arch x32` and `eip` is read, a text file as target fails with "Invalid PE file", and an unknown command is reported without failing the run
 - Live on `C:\Windows\System32\find.exe` (harmless, exits immediately): `run` stops at the entry breakpoint, `sti` moves `rip` forward by a few bytes, `log "{mem;4@rip}"` returns 4 bytes of hex that match `rip`, registers include `rip`, `rsp` and `eflags`, and a missing target is a clear error. After the runs no `find.exe` or `headless.exe` process is left behind (checked by hand with `tasklist`).
 
 ## Realistic workflow verified by hand
@@ -30,13 +32,13 @@
 With x64dbg 2026.05.27 on Windows (live tests run; 1 test skipped because it checks the non-Windows refusal):
 
 ```
-.......................................................s......           [100%]
-61 passed, 1 skipped in 26.10s
+...........................................................s..........   [100%]
+69 passed, 1 skipped in 30.97s
 ```
 
 Without x64dbg (live tests skipped):
 
 ```
-.......................................................s.ssss.           [100%]
-57 passed, 5 skipped in 22.16s
+...........................................................s.ssss.ssss   [100%]
+61 passed, 9 skipped in 21.66s
 ```

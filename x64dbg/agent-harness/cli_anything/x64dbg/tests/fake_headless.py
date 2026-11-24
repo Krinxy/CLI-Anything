@@ -33,6 +33,12 @@ for raw in sys.stdin:
         path = re.search(r'"(.*)"', cmd).group(1)
         if "bad" in path:
             say("File does not exist!")
+        elif "wrongarch" in path:
+            say("Debugging: " + path, "Use x32dbg to debug this file!")
+        elif "notpe" in path:
+            say("Debugging: " + path, "Invalid PE file!")
+        elif "silent" in path:
+            say("Debugging: " + path)  # prints nothing else: the load must time out, not hang
         else:
             debugging = True
             say("Debugging: " + path, "[STATE] initialized", "[SYMBOL] [DIA] Skipping non-existent PDB: x.pdb",
