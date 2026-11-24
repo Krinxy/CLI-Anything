@@ -88,7 +88,7 @@ class X64dbgSession:
         except OSError as e:
             raise RuntimeError(f"Cannot start x64dbg headless ({type(e).__name__}). " + INSTALL_HELP)
         threading.Thread(target=self._pump, daemon=True).start()
-        _, ok = self._read_until(lambda l: STARTED in l, timeout)
+        _, ok = self._read_until(lambda ln: STARTED in ln, timeout)
         if not ok:
             self.close()
             raise RuntimeError("x64dbg headless did not start.")
@@ -193,10 +193,10 @@ class X64dbgSession:
         path = check_target(target)
         self._drain()
         self._send(f'init "{path}"')
-        lines, ok = self._read_until(lambda l: l.startswith(SYSTEM_BP) or "does not exist" in l, timeout)
+        lines, ok = self._read_until(lambda ln: ln.startswith(SYSTEM_BP) or "does not exist" in ln, timeout)
         if self._ended:
             raise RuntimeError("x64dbg headless exited while starting the target.")
-        if not ok or any("does not exist" in l for l in lines):
+        if not ok or any("does not exist" in ln for ln in lines):
             raise RuntimeError("x64dbg could not start the target: " + " | ".join(lines[-3:]))
         return lines
 
@@ -207,13 +207,13 @@ class X64dbgSession:
         self._send(command)
         if command.split(None, 1)[0].lower() in RESUME:
             lines, ok = self._read_until(
-                lambda l: l.startswith(("[STATE] paused", "[STATE] stopped")) or "debug-only" in l, timeout)
+                lambda ln: ln.startswith(("[STATE] paused", "[STATE] stopped")) or "debug-only" in ln, timeout)
             lines = lines + self._settle() if ok else lines
         else:
             token = f"CLIAX-{uuid.uuid4().hex[:8]}"
             self._send(f'log "{token}"')
-            lines, ok = self._read_until(lambda l: l == token, timeout)
-            lines = [l for l in lines if l != token]
+            lines, ok = self._read_until(lambda ln: ln == token, timeout)
+            lines = [ln for ln in lines if ln != token]
         if self._ended:
             raise RuntimeError("x64dbg headless exited while running " + repr(command) + ".")
         return {"command": command, "output": lines, "state": self.state, "timed_out": not ok}

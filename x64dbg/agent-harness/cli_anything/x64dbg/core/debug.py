@@ -12,7 +12,7 @@ def read_registers(session: X64dbgSession, arch: str = "x64", timeout: float = 3
     names = REGISTERS if arch == "x64" else X32_REGISTERS
     fmt = " ".join(f"{n}={{x:{n}}}" for n in names)
     result = session.run(f'log "{fmt}"', timeout)
-    line = next((l for l in result["output"] if l.startswith(f"{names[0]}=")), "")
+    line = next((ln for ln in result["output"] if ln.startswith(f"{names[0]}=")), "")
     return dict(pair.split("=", 1) for pair in line.split() if "=" in pair)
 
 

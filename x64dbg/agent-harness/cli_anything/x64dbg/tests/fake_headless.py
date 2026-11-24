@@ -48,7 +48,7 @@ for raw in sys.stdin:
     elif word == "erun":
         say("[STATE] running")  # never pauses: lets tests exercise the timeout path
     elif word == "rtr":
-        say("[STATE] running")  # rtr (a resume command) pauses only after 1s: its event arrives after a short timeout has expired
+        say("[STATE] running")  # rtr (a resume command) pauses after 1s: its event arrives late
         threading.Timer(1.0, lambda: say("[STATE] paused")).start()
     elif word == "die":
         sys.exit(3)

@@ -83,15 +83,15 @@ def test_live_run_stops_at_entry_breakpoint(session_result):
 
 @live
 def test_live_step_moves_rip_forward(session_result):
-    before = next(l for l in session_result["results"][1]["output"] if l.startswith("rip="))
-    after = next(l for l in session_result["results"][3]["output"] if l.startswith("rip="))
+    before = next(ln for ln in session_result["results"][1]["output"] if ln.startswith("rip="))
+    after = next(ln for ln in session_result["results"][3]["output"] if ln.startswith("rip="))
     a, b = (int(re.search(r"rip=([0-9A-F]+)", x).group(1), 16) for x in (before, after))
     assert 0 < b - a < 16
 
 
 @live
 def test_live_memory_and_registers(session_result):
-    last = next(l for l in session_result["results"][3]["output"] if "mem=" in l)
+    last = next(ln for ln in session_result["results"][3]["output"] if "mem=" in ln)
     assert re.search(r"mem=[0-9A-F]{8}$", last)
     regs = session_result["registers"]
     assert regs["rip"] in last and "rsp" in regs and "eflags" in regs
@@ -101,3 +101,9 @@ def test_live_memory_and_registers(session_result):
 def test_live_missing_target_is_a_clear_error():
     res = run_cli("--json", "run", os.path.join(os.environ.get("TEMP", "."), "no_such_target.exe"), "--execute")
     assert res.returncode == 1 and "Target not found" in json.loads(res.stdout)["error"]
+
+
+def test_usage_error_in_json_mode_is_json_on_stdout():
+    res = run_cli("--json", "run")
+    assert res.returncode == 2
+    assert "TARGET" in json.loads(res.stdout)["error"]

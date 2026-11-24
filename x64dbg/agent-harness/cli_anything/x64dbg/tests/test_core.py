@@ -15,7 +15,7 @@ from cli_anything.x64dbg.utils.x64dbg_backend import (
     X64dbgSession, check_command, check_target, find_headless,
 )
 from cli_anything.x64dbg import x64dbg_cli
-from cli_anything.x64dbg.x64dbg_cli import cli, load_argument, repl_step
+from cli_anything.x64dbg.x64dbg_cli import _safe_streams, cli, load_argument, main, repl_step
 
 FAKE = [sys.executable, str(Path(__file__).with_name("fake_headless.py"))]
 
@@ -104,8 +104,8 @@ def test_start_and_close_terminates_process():
 
 def test_load_waits_for_system_breakpoint_and_filters_noise(session, target):
     lines = session.load(target)
-    assert any(l.startswith("System breakpoint reached") for l in lines)
-    assert not any(l.startswith("[SYMBOL]") for l in lines)
+    assert any(ln.startswith("System breakpoint reached") for ln in lines)
+    assert not any(ln.startswith("[SYMBOL]") for ln in lines)
     assert session.state == "paused"
 
 
@@ -127,7 +127,7 @@ def test_resume_waits_for_pause_event(session, target):
     session.load(target)
     result = session.run("run")
     assert result["state"] == "paused" and not result["timed_out"]
-    assert any("INT3 breakpoint" in l for l in result["output"])
+    assert any("INT3 breakpoint" in ln for ln in result["output"])
     assert session.run('log "{x:rip}"')["output"][-1] == "1400"
 
 
@@ -140,7 +140,7 @@ def test_stepping_moves_rip(session, target):
 
 def test_resume_without_debuggee_returns_debug_only_not_timeout(session):
     result = session.run("run", timeout=5)
-    assert any("debug-only" in l for l in result["output"]) and not result["timed_out"]
+    assert any("debug-only" in ln for ln in result["output"]) and not result["timed_out"]
 
 
 def test_command_that_never_pauses_times_out_with_state(session, target):
@@ -285,7 +285,7 @@ def test_repl_load_run_regs_and_close(fake_session, target):
     state = {}
     try:
         assert repl_step(state, f'load "{target}"', "x64", True) == ["Stopped at the system breakpoint."]
-        assert any("INT3 breakpoint" in l for l in repl_step(state, "run", "x64", True))
+        assert any("INT3 breakpoint" in ln for ln in repl_step(state, "run", "x64", True))
         assert "rip=1400" in repl_step(state, "regs", "x64", True)[0]
         assert "Unknown command" in repl_step(state, "frobnicate", "x64", True)[0]
     finally:
@@ -327,3 +327,61 @@ def test_cli_execute_at_root_enables_run(target):
     with patch.object(debug, "debug_target", fake_debug):
         res = CliRunner().invoke(cli, ["--json", "--execute", "run", target], obj={})
     assert res.exit_code == 0 and seen["ok"]
+
+
+# --- error contract of main() --------------------------------------------
+
+def run_main(monkeypatch, capsys, *argv):
+    monkeypatch.setattr(sys, "argv", ["cli-anything-x64dbg", *argv])
+    with pytest.raises(SystemExit) as exc:
+        main()
+    out = capsys.readouterr()
+    return exc.value.code, out.out, out.err
+
+
+def test_usage_error_in_json_mode_is_json_with_exit_2(monkeypatch, capsys):
+    code, out, err = run_main(monkeypatch, capsys, "--json", "run")
+    assert code == 2 and err == ""
+    assert "TARGET" in json.loads(out)["error"]
+
+
+def test_usage_error_without_json_stays_click_text_on_stderr(monkeypatch, capsys):
+    code, out, err = run_main(monkeypatch, capsys, "run")
+    assert code == 2 and out == "" and "Usage:" in err and "TARGET" in err
+
+
+def test_help_exits_zero_with_text(monkeypatch, capsys):
+    code, out, _ = run_main(monkeypatch, capsys, "--help")
+    assert code == 0 and "run" in out
+
+
+def test_backend_error_is_json_with_exit_1(monkeypatch, capsys, target):
+    with patch.object(debug, "debug_target", side_effect=RuntimeError("no x64dbg here")):
+        code, out, _ = run_main(monkeypatch, capsys, "--json", "run", target, "--execute")
+    assert code == 1 and json.loads(out) == {"error": "no x64dbg here"}
+
+
+@pytest.mark.parametrize("flag", [["--json"], []])
+def test_unexpected_exception_is_a_message_not_a_traceback(monkeypatch, capsys, target, flag):
+    with patch.object(debug, "debug_target", side_effect=KeyError("rip")):
+        code, out, err = run_main(monkeypatch, capsys, *flag, "run", target, "--execute")
+    text = json.loads(out)["error"] if flag else err
+    assert code == 1 and "Unexpected error (KeyError)" in text and "Traceback" not in out + err
+
+
+def test_abort_in_json_mode_is_json(monkeypatch, capsys):
+    import click
+    with patch.object(x64dbg_cli, "cli", side_effect=click.Abort()):
+        code, out, _ = run_main(monkeypatch, capsys, "--json", "run", "x.exe")
+    assert code == 1 and json.loads(out) == {"error": "Aborted."}
+
+
+def test_non_ascii_output_never_crashes_on_a_legacy_console(monkeypatch):
+    import io
+    raw = io.BytesIO()
+    stream = io.TextIOWrapper(raw, encoding="cp1252", errors="strict")
+    monkeypatch.setattr(sys, "stdout", stream)
+    _safe_streams()
+    print("module \u4e2d\u6587 caf\u00e9")
+    stream.flush()
+    assert (chr(92) + "u4e2d").encode() in raw.getvalue() and "caf".encode() in raw.getvalue()

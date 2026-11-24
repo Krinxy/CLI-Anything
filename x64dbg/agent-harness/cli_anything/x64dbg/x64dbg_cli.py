@@ -55,17 +55,36 @@ def cli(ctx: click.Context, as_json: bool, arch: str, root_execute: bool):
         ctx.invoke(repl)
 
 
+def _safe_streams() -> None:
+    """Never crash on a character the console encoding cannot show (debuggee output can hold any text)."""
+    for stream in (sys.stdout, sys.stderr):
+        if hasattr(stream, "reconfigure"):
+            stream.reconfigure(errors="backslashreplace")
+
+
 def main():
+    _safe_streams()
+    as_json = "--json" in sys.argv  # the Click context is already unwound when an error reaches here
     try:
-        cli(obj={})
-    except RuntimeError as exc:
-        # Backend failures arrive as exceptions; surface them as parsable JSON with --json.
-        # sys.argv is used because the Click context is already unwound here.
-        if "--json" in sys.argv:
-            click.echo(json.dumps({"error": str(exc)}, default=str))
+        code = cli(obj={}, standalone_mode=False)  # --help and friends come back as an exit code
+    except click.ClickException as exc:  # usage errors: a missing TARGET, an unknown option, a bad value
+        if as_json:
+            click.echo(json.dumps({"error": exc.format_message()}, default=str))
         else:
-            click.echo(str(exc), err=True)
+            exc.show()
+        sys.exit(exc.exit_code)
+    except click.Abort:
+        click.echo(json.dumps({"error": "Aborted."}) if as_json else "Aborted!", err=not as_json)
         sys.exit(1)
+    except Exception as exc:  # backend failures (RuntimeError) and anything unexpected: no traceback
+        message = str(exc) if isinstance(exc, RuntimeError) else f"Unexpected error ({type(exc).__name__}): {exc}"
+        if as_json:
+            click.echo(json.dumps({"error": message}, default=str))
+        else:
+            click.echo(message, err=True)
+        sys.exit(1)
+    else:
+        sys.exit(code if isinstance(code, int) else 0)
 
 
 # ---------------------------------------------------------------------------
@@ -123,7 +142,7 @@ def repl(ctx: click.Context):
                 skin.help({
                     "load TARGET": "Start TARGET under the debugger (executes it) and stop at the system breakpoint",
                     "regs": "General-purpose registers",
-                    "run / sti / sto / bp ADDR / ...": "Any x64dbg command (unrestricted); evaluate with: log \"{x:rip}\"",
+                    "run / sti / sto / bp ADDR / ...": "Any x64dbg command (unrestricted), e.g. log \"{x:rip}\"",
                     "quit": "Stop the debuggee and leave",
                 })
                 continue
