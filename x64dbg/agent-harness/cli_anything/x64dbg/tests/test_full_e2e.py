@@ -148,3 +148,17 @@ def test_live_unknown_command_is_reported_not_fatal():
     res = run_cli("--json", "run", FIND, "--execute", "--cmd", "frobnicate")
     data = json.loads(res.stdout)
     assert res.returncode == 0 and any("Unknown command" in line for line in data["results"][0]["output"])
+
+
+@live
+@pytest.mark.parametrize("folder", ["Max Mustermann", "Jürgen Müller", "O'Neil", "name#1", "a,b", "a;b", "a=b",
+                                    "名前", "50% off", "a&b", "a$b"])
+def test_live_target_path_may_contain_any_characters(tmp_path, folder):
+    """The path goes to x64dbg over stdin, not a command line, so no user or folder name can break it."""
+    target_dir = tmp_path / folder
+    target_dir.mkdir()
+    target = target_dir / "find.exe"
+    shutil.copyfile(FIND, target)
+    res = run_cli("--json", "run", str(target), "--execute", "--cmd", "run")
+    data = json.loads(res.stdout)
+    assert res.returncode == 0 and data["state"] == "paused", res.stdout

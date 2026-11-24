@@ -21,6 +21,7 @@
 
 - Subprocess, no x64dbg: `--help`, a usage error is JSON on stdout with exit 2, `--execute` is required, non-Windows refusal, missing `X64DBG_DIR` gives a JSON error
 - Real failure modes (no mocks): the 32-bit `SysWOW64\find.exe` in the x64 debugger fails in under 25 s with the `--arch x32` hint (it used to take 61 s), the same binary works with `--arch x32` and `eip` is read, a text file as target fails with "Invalid PE file", and an unknown command is reported without failing the run
+- Any path (real x64dbg): a target under folders named `Max Mustermann`, `Jürgen Müller`, `O'Neil`, `name#1`, `a,b`, `a;b`, `a=b`, a CJK name, `50% off`, `a&b` and `a$b` runs to the entry breakpoint, because the path goes over stdin and not a command line
 - Live on `C:\Windows\System32\find.exe` (harmless, exits immediately): `run` stops at the entry breakpoint, `sti` moves `rip` forward by a few bytes, `log "{mem;4@rip}"` returns 4 bytes of hex that match `rip`, registers include `rip`, `rsp` and `eflags`, and a missing target is a clear error. After the runs no `find.exe` or `headless.exe` process is left behind (checked by hand with `tasklist`).
 
 ## Realistic workflow verified by hand
@@ -32,13 +33,14 @@
 With x64dbg 2026.05.27 on Windows (live tests run; 1 test skipped because it checks the non-Windows refusal):
 
 ```
-...........................................................s..........   [100%]
-69 passed, 1 skipped in 30.97s
+...........................................................s............ [ 88%]
+.........                                                                [100%]
+80 passed, 1 skipped in 44.83s
 ```
 
 Without x64dbg (live tests skipped):
 
 ```
-...........................................................s.ssss.ssss   [100%]
-61 passed, 9 skipped in 21.66s
+sssssssss                                                                [100%]
+61 passed, 20 skipped in 19.68s
 ```
